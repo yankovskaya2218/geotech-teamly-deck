@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<!--
+  Дек GeoTech · Teamly через MCP. Source текста: «03 текст слайдов.md».
+  Стиль: драфт Алиот (тёмный градиент, белый текст, glassmorphism). Типографика по правилам QSOFT: Manrope 400/600, h1 90px, пункт 40px, подзаголовок 26px, текст 20px, отступы 60px.
+-->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teamly · Корпоративный ИИ с базой знаний</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --h1:90px; --point:40px; --subtitle:26px; --body:20px; --pad:60px;
+    --grad:linear-gradient(135deg,#1a256e 0%,#4226a6 42%,#8d1fb0 72%,#c41d8f 100%);
+    --ink:#ffffff; --muted:rgba(255,255,255,.72); --faint:rgba(255,255,255,.55);
+    --glass:rgba(255,255,255,.09); --glass-strong:rgba(255,255,255,.16); --hair:rgba(255,255,255,.22);
+    --accent:#7fd2ff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{ font-family:'Manrope',sans-serif; background:#0a0c1a; color:var(--ink); overflow:hidden; font-weight:400; -webkit-font-smoothing:antialiased; }
+  #scaler{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  #stage{ width:1920px; height:1080px; position:relative; transform-origin:center center; flex:0 0 auto; }
+  .slide{ position:absolute; inset:0; background:var(--grad); padding:var(--pad); display:flex; flex-direction:column; opacity:0; visibility:hidden; transition:opacity .45s cubic-bezier(.2,.7,.2,1); overflow:hidden; }
+  .slide.active{ opacity:1; visibility:visible; }
+  .slide::after{ content:""; position:absolute; right:-220px; top:-220px; width:760px; height:760px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.12),transparent 60%); pointer-events:none; }
+  .chrome{ position:absolute; left:var(--pad); right:var(--pad); display:flex; justify-content:space-between; align-items:center; font-size:16px; color:var(--faint); letter-spacing:.04em; z-index:3; }
+  .chrome.bot{ bottom:36px; } .chrome .brand{ text-transform:uppercase; }
+  .progress{ position:absolute; top:0; left:0; height:4px; background:#ffffff; opacity:.85; transition:width .45s ease; z-index:3; }
+  .wm{ position:absolute; top:var(--pad); left:var(--pad); font-size:26px; font-weight:600; letter-spacing:.22em; color:#fff; z-index:3; }
+  .slide.active .reveal{ animation:rise .55s cubic-bezier(.2,.7,.2,1) both; }
+  .slide.active .reveal:nth-child(2){ animation-delay:.06s; }
+  .slide.active .reveal:nth-child(3){ animation-delay:.12s; }
+  .slide.active .reveal:nth-child(4){ animation-delay:.18s; }
+  .slide.active .reveal:nth-child(5){ animation-delay:.24s; }
+  @keyframes rise{ from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:none;} }
+
+  .kicker{ font-size:var(--body); color:var(--accent); text-transform:uppercase; letter-spacing:.14em; margin-bottom:26px; }
+  h1{ font-size:var(--h1); font-weight:600; line-height:1.04; letter-spacing:-.02em; max-width:1560px; }
+  .subtitle{ font-size:var(--subtitle); color:var(--muted); line-height:1.4; max-width:1320px; }
+  .note{ font-size:var(--body); color:var(--muted); margin-top:24px; max-width:1200px; line-height:1.45; }
+  .content{ flex:1; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:2; }
+  .content.cols{ flex-direction:row; gap:80px; align-items:center; }
+  .col{ flex:1; }
+
+  .glass{ background:var(--glass); border:1px solid var(--hair); border-radius:24px; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+
+  .pts{ list-style:none; display:flex; flex-direction:column; gap:24px; margin-top:44px; max-width:1320px; }
+  .pts li{ font-size:var(--body); line-height:1.45; padding-left:34px; position:relative; color:var(--ink); }
+  .pts li::before{ content:""; position:absolute; left:0; top:10px; width:12px; height:12px; background:var(--accent); border-radius:3px; }
+
+  .goal{ font-size:54px; font-weight:600; line-height:1.12; letter-spacing:-.02em; max-width:1500px; margin-top:30px; }
+  .frame{ font-size:var(--subtitle); color:var(--muted); line-height:1.4; max-width:1300px; margin-top:26px; }
+
+  .tasks{ display:grid; grid-template-columns:repeat(3,1fr); gap:30px; margin-top:50px; }
+  .task{ padding:34px; }
+  .task .n{ font-size:var(--body); color:var(--accent); letter-spacing:.08em; }
+  .task .h{ font-size:var(--point); font-weight:600; line-height:1.1; margin-top:14px; }
+  .task .d{ font-size:var(--body); color:var(--muted); line-height:1.4; margin-top:16px; }
+
+  .steps{ display:flex; flex-direction:column; gap:28px; margin-top:50px; max-width:1380px; }
+  .step{ display:flex; gap:30px; align-items:center; padding:30px 38px; }
+  .step .n{ font-size:var(--point); font-weight:600; color:var(--accent); line-height:1; min-width:64px; }
+  .step .t{ font-size:var(--subtitle); line-height:1.3; }
+
+  .flow{ display:flex; align-items:stretch; margin-top:54px; }
+  .node{ padding:32px; display:flex; flex-direction:column; justify-content:center; min-height:190px; flex:1; }
+  .node .nh{ font-size:var(--subtitle); font-weight:600; line-height:1.18; }
+  .node .nd{ font-size:18px; color:var(--muted); margin-top:12px; line-height:1.4; }
+  .node.accent{ background:var(--glass-strong); }
+  .arrow{ display:flex; align-items:center; justify-content:center; padding:0 20px; color:#fff; font-size:34px; }
+
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:46px; }
+  .panel{ padding:40px; }
+  .panel .ch{ font-size:var(--subtitle); font-weight:600; margin-bottom:24px; display:flex; align-items:center; gap:14px; }
+  .panel .ch .dot{ width:14px; height:14px; border-radius:4px; background:var(--accent); }
+  .panel.warn .ch .dot{ background:#ffcf6b; }
+  .panel ul{ list-style:none; display:flex; flex-direction:column; gap:18px; }
+  .panel li{ font-size:var(--body); line-height:1.4; padding-left:28px; position:relative; }
+  .panel li::before{ content:""; position:absolute; left:0; top:9px; width:10px; height:10px; border-radius:2px; background:var(--faint); }
+  .panel.warn li::before{ background:#ffcf6b; }
+
+  .scenarios{ display:flex; flex-direction:column; gap:22px; margin-top:14px; }
+  .scn{ padding:26px 32px; display:flex; gap:26px; align-items:baseline; }
+  .scn .n{ font-size:32px; font-weight:600; color:var(--accent); min-width:46px; }
+  .scn .b .h{ font-size:var(--subtitle); font-weight:600; }
+  .scn .b .d{ font-size:var(--body); color:var(--muted); line-height:1.4; margin-top:8px; }
+
+  .price{ display:flex; align-items:flex-end; gap:80px; margin-top:40px; }
+  .price .big{ font-size:140px; font-weight:600; line-height:.95; letter-spacing:-.03em; }
+  .price .term{ font-size:54px; font-weight:600; color:var(--muted); }
+  .stages{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:64px; }
+  .stage-card{ padding:30px; }
+  .stage-card .sn{ font-size:18px; color:var(--accent); letter-spacing:.08em; }
+  .stage-card .st{ font-size:24px; font-weight:600; line-height:1.2; margin-top:14px; }
+
+  .cover{ height:100%; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:2; }
+  .cover h1{ font-size:122px; letter-spacing:-.03em; max-width:1600px; }
+  .cover .sub{ font-size:34px; color:var(--muted); max-width:1200px; margin-top:34px; line-height:1.3; }
+  .accentbar{ width:96px; height:8px; background:#fff; margin:44px 0 0; border-radius:4px; }
+  .cover-foot{ position:absolute; bottom:var(--pad); left:var(--pad); font-size:var(--body); color:var(--muted); z-index:2; }
+
+  .contactsbar{ display:flex; justify-content:space-between; align-items:flex-end; position:relative; z-index:2; }
+  .contactgrid{ display:flex; gap:64px; }
+  .contactgrid .cl{ font-size:17px; color:var(--faint); margin-bottom:8px; }
+  .contactgrid .cv{ font-size:24px; line-height:1.3; }
+  .wordmark{ font-size:48px; font-weight:600; letter-spacing:.18em; color:#fff; }
+
+  /* BPMN свимлейны (слайд 3) */
+  .diagram{ position:relative; width:1800px; height:600px; margin-top:34px; }
+  .lane{ position:absolute; left:0; right:0; border-radius:18px; background:rgba(255,255,255,.05); border:1px solid var(--hair); }
+  .lane.l1{ top:0; height:180px; }
+  .lane.l2{ top:208px; height:180px; }
+  .lane.l3{ top:416px; height:180px; }
+  .lane-label{ position:absolute; left:26px; top:50%; transform:translateY(-50%); font-size:24px; font-weight:600; max-width:170px; line-height:1.15; }
+  .lane-label span{ display:block; font-size:16px; color:var(--muted); margin-top:6px; font-weight:400; }
+  .bnode{ position:absolute; background:var(--glass-strong); border:1px solid var(--hair); border-radius:16px; padding:20px 24px; z-index:3; }
+  .bnode .t{ font-size:22px; font-weight:600; line-height:1.2; }
+  .bnode .s{ font-size:16px; color:var(--muted); margin-top:8px; line-height:1.35; }
+  .gateway{ position:absolute; z-index:3; background:rgba(127,210,255,.16); border:1.5px solid var(--accent); border-radius:16px; padding:20px 24px; }
+  .gateway .t{ font-size:22px; font-weight:600; line-height:1.2; }
+  .svg-layer{ position:absolute; inset:0; z-index:1; pointer-events:none; }
+  .elabel{ position:absolute; z-index:3; font-size:16px; color:#fff; background:rgba(12,14,32,.62); border:1px solid var(--hair); padding:5px 12px; border-radius:9px; }
+
+  @media print{
+    @page{ size:20in 11.25in; margin:0; }
+    html,body{ overflow:visible !important; height:auto !important; }
+    #scaler{ position:static !important; display:block !important; }
+    #stage{ transform:none !important; position:static !important; width:1920px !important; height:auto !important; }
+    .slide{ position:relative !important; inset:auto !important; opacity:1 !important; visibility:visible !important; width:1920px !important; height:1080px !important; page-break-after:always; break-after:page; }
+    .slide:last-child{ page-break-after:auto; break-after:auto; }
+    .slide .reveal{ animation:none !important; opacity:1 !important; transform:none !important; }
+    .progress{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="scaler"><div id="stage">
+
+  <!-- 0. ОБЛОЖКА -->
+  <section class="slide">
+    <div class="wm">TEAMLY</div>
+    <div class="cover">
+      <div class="kicker reveal">для&nbsp;ГеоТех</div>
+      <h1 class="reveal">Корпоративный ИИ<br>с&nbsp;базой знаний</h1>
+      <div class="accentbar reveal"></div>
+      <div class="sub reveal">Интеграция Teamly в&nbsp;Open WebUI через MCP</div>
+    </div>
+    <div class="cover-foot">июнь 2026</div>
+  </section>
+
+  <!-- 1. ЦЕЛИ И ЗАДАЧИ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Цели и&nbsp;задачи проекта</div>
+      <div class="goal reveal">Единое окно знаний для&nbsp;всех сотрудников: найти нужное и&nbsp;пополнить базу прямо в&nbsp;чате</div>
+      <div class="frame reveal">База знаний с&nbsp;поиском через RAG - неотъемлемая часть единой системы корпоративного ИИ.</div>
+      <div class="tasks reveal">
+        <div class="task glass"><div class="n">Задача 01</div><div class="h">Найти информацию</div><div class="d">поиск по&nbsp;регламентам, инструкциям и&nbsp;операционным данным через RAG</div></div>
+        <div class="task glass"><div class="n">Задача 02</div><div class="h">Создать и&nbsp;сохранить</div><div class="d">собрать отчёт, инструкцию или&nbsp;расчёт в&nbsp;чате и&nbsp;положить обратно в&nbsp;базу знаний</div></div>
+        <div class="task glass"><div class="n">Задача 03</div><div class="h">Держать актуальным</div><div class="d">обновлять материалы, собирать разрозненные источники в&nbsp;единую базу</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1б. КЛАССЫ ЗНАНИЙ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Какие знания закрываем</div>
+      <h1 class="reveal" style="font-size:58px;">Одна база знаний на&nbsp;весь контур ГеоТеха</h1>
+      <div class="listgrid reveal" style="margin-top:40px;">
+        <div class="item"><div class="lead">Геология и&nbsp;горная инженерия</div><div class="sub">архивные данные, геопространственные данные, 3D-модели</div></div>
+        <div class="item"><div class="lead">Проектирование</div><div class="sub">проектная документация, схемы, чертежи, сметы, BIM-модели</div></div>
+        <div class="item"><div class="lead">Стройка</div><div class="sub">рабочая документация, календарные графики, отчёты, заявки</div></div>
+        <div class="item"><div class="lead">Логистика и&nbsp;закупки</div><div class="sub">КП, договоры, счета-фактуры, заказ-наряды, накладные</div></div>
+        <div class="item"><div class="lead">Персонал</div><div class="sub">ЭДО, рекрутмент, обучение</div></div>
+        <div class="item"><div class="lead">Финансы и&nbsp;юриспруденция</div><div class="sub">бюджеты, служебные записки, лицензии, договоры</div></div>
+        <div class="item"><div class="lead">Проектное управление</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. ЧТО ПРЕДЛАГАЕМ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Что предлагаем</div>
+      <h1 class="reveal">Teamly подключается к&nbsp;Open WebUI классическим способом - через MCP</h1>
+      <ul class="pts reveal">
+        <li>MCP-сервер делает Teamly RAG-слоем платформы Open WebUI, без&nbsp;кастомизации интерфейса</li>
+        <li>6 инструментов для&nbsp;работы со&nbsp;знаниями прямо в&nbsp;чате</li>
+        <li>Безопасный вход: пользователь работает под&nbsp;своей учётной записью, права на&nbsp;знания - как в&nbsp;Teamly, пароль не&nbsp;передаётся (стандарт OAuth&nbsp;2.1)</li>
+      </ul>
+      <div class="note reveal">Интеграцию выполняет QSOFT, со&nbsp;стороны ГеоТеха - три действия.</div>
+    </div>
+  </section>
+
+  <!-- 3. КАК ЭТО РАБОТАЕТ (BPMN свимлейны) -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Как это работает</div>
+      <h1 class="reveal" style="font-size:58px;">Teamly через MCP отдаёт выборку и&nbsp;контекст, логику ГеоТех держит на&nbsp;своей стороне</h1>
+      <div class="diagram reveal">
+        <!-- дорожки сервисов -->
+        <div class="lane l1"><div class="lane-label">Open WebUI<span>чат и&nbsp;LLM</span></div></div>
+        <div class="lane l2"><div class="lane-label">MCP-сервер</div></div>
+        <div class="lane l3"><div class="lane-label">RAG<span>Teamly</span></div></div>
+
+        <!-- связи -->
+        <svg class="svg-layer" viewBox="0 0 1800 600" preserveAspectRatio="none">
+          <defs>
+            <marker id="ah" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+              <path d="M0,0 L9,4 L0,8 Z" fill="#ffffff"></path>
+            </marker>
+          </defs>
+          <!-- запрос: WebUI -> MCP -->
+          <path d="M410,150 L760,250" stroke="#fff" stroke-width="2.5" fill="none" marker-end="url(#ah)"></path>
+          <!-- хватает: MCP -> RAG -->
+          <path d="M820,330 L1010,470" stroke="#fff" stroke-width="2.5" fill="none" marker-end="url(#ah)"></path>
+          <!-- не хватает: MCP -> LLM (уточнение) -->
+          <path d="M970,270 L1470,150" stroke="#7fd2ff" stroke-width="2.5" fill="none" stroke-dasharray="7 6" marker-end="url(#ah)"></path>
+          <!-- выборка и контекст: RAG -> LLM -->
+          <path d="M1200,452 L1500,158" stroke="#fff" stroke-width="2.5" fill="none" marker-end="url(#ah)"></path>
+        </svg>
+
+        <!-- узлы -->
+        <div class="bnode" style="left:200px; top:46px; width:300px;">
+          <div class="t">Запрос в&nbsp;чате</div><div class="s">пользователь переключает модель «Teamly» и&nbsp;спрашивает</div>
+        </div>
+        <div class="bnode" style="left:1440px; top:46px; width:320px;">
+          <div class="t">LLM формирует ответ</div><div class="s">через промптинг на&nbsp;стороне ГеоТеха</div>
+        </div>
+        <div class="gateway" style="left:600px; top:250px; width:330px;">
+          <div class="t">Проверка обязательных полей</div>
+        </div>
+        <div class="bnode" style="left:1000px; top:462px; width:340px;">
+          <div class="t">Поиск по&nbsp;RAG</div><div class="s">возвращает выборку и&nbsp;контекст</div>
+        </div>
+
+        <!-- подписи связей -->
+        <div class="elabel" style="left:470px; top:178px;">запрос</div>
+        <div class="elabel" style="left:778px; top:404px;">поля есть</div>
+        <div class="elabel" style="left:1030px; top:150px;">не&nbsp;хватает: уточнение в&nbsp;LLM</div>
+        <div class="elabel" style="left:1300px; top:300px;">выборка и&nbsp;контекст</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 6 ИНСТРУМЕНТОВ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Инструменты</div>
+      <h1 class="reveal" style="font-size:72px;">Получите 6&nbsp;инструментов для&nbsp;работы со&nbsp;знаниями в&nbsp;чате</h1>
+      <div class="subtitle reveal" style="margin-top:22px;">Инструменты MCP, которые ИИ-агент вызывает в&nbsp;чате ГеоТеха</div>
+      <div class="twocol reveal">
+        <div class="panel glass">
+          <div class="ch"><span class="dot"></span>Найти знания</div>
+          <ul>
+            <li>Семантический поиск по&nbsp;базе - находит по&nbsp;смыслу запроса, не&nbsp;по&nbsp;точным словам</li>
+            <li>Получить полную статью - когда нужен весь текст, а&nbsp;не&nbsp;фрагмент</li>
+            <li>Посмотреть структуру - дерево пространств и&nbsp;статей, чтобы выбрать куда смотреть или&nbsp;сохранять</li>
+          </ul>
+        </div>
+        <div class="panel glass">
+          <div class="ch"><span class="dot"></span>Сохранить знания</div>
+          <ul>
+            <li>Создать статью - новая пустая статья в&nbsp;нужном пространстве</li>
+            <li>Заполнить содержимое - собрать текст статьи с&nbsp;нуля</li>
+            <li>Обновить содержимое - перезаписать целиком или&nbsp;дописать в&nbsp;конец</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4б. СЦЕНАРИИ И ОГРАНИЧЕНИЯ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Сквозной сценарий</div>
+      <h1 class="reveal" style="font-size:56px;">Ремонт техники на&nbsp;стройплощадке - один цикл от&nbsp;поиска до&nbsp;отчёта</h1>
+      <div class="twocol reveal" style="grid-template-columns:1.3fr 1fr; align-items:start; margin-top:34px;">
+        <div class="scenarios">
+          <div class="scn glass"><div class="n">01</div><div class="b"><div class="h">Найти похожие инциденты</div><div class="d">поиск по&nbsp;базе знаний - чем уже сталкивались по&nbsp;этой технике</div></div></div>
+          <div class="scn glass"><div class="n">02</div><div class="b"><div class="h">Определить причины и&nbsp;запчасти</div><div class="d">по&nbsp;найденным материалам и&nbsp;инструкциям к&nbsp;оборудованию</div></div></div>
+          <div class="scn glass"><div class="n">03</div><div class="b"><div class="h">Сформировать план ремонта</div><div class="d">собрать из&nbsp;инструкций и&nbsp;описаний прямо в&nbsp;чате</div></div></div>
+          <div class="scn glass"><div class="n">04</div><div class="b"><div class="h">Сохранить отчёт в&nbsp;базу</div><div class="d">после ремонта отчёт уходит обратно в&nbsp;Teamly и&nbsp;пополняет знания</div></div></div>
+        </div>
+        <div class="panel glass warn">
+          <div class="ch"><span class="dot"></span>Ограничения</div>
+          <ul>
+            <li>MCP даёт инструменты и&nbsp;инструкции, не&nbsp;бизнес-логику - уникальные сценарии настраиваются системным промтом</li>
+            <li>Сохранение ограничено редактором Teamly: сложные графики и&nbsp;html не&nbsp;сохранятся</li>
+            <li>Редактирование - полная перезапись статьи, без&nbsp;частичного</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. СО СТОРОНЫ ГЕОТЕХА -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Со&nbsp;стороны ГеоТеха</div>
+      <h1 class="reveal">Со&nbsp;стороны ГеоТеха - три действия</h1>
+      <div class="steps reveal">
+        <div class="step glass"><div class="n">01</div><div class="t">Подключить MCP-сервер к&nbsp;платформе Open WebUI</div></div>
+        <div class="step glass"><div class="n">02</div><div class="t">Добавить модель «Teamly» в&nbsp;нужные чаты и&nbsp;агенты</div></div>
+        <div class="step glass"><div class="n">03</div><div class="t">Прописать системный промт под&nbsp;свои процессы</div></div>
+      </div>
+      <div class="note reveal">Это всё, что нужно сделать со&nbsp;стороны ГеоТеха. Дополнительные доработки не&nbsp;требуются.</div>
+    </div>
+  </section>
+
+  <!-- 6. СТОИМОСТЬ И СРОКИ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Стоимость и&nbsp;сроки</div>
+      <h1 class="reveal" style="font-size:64px;">Стоимость и&nbsp;сроки</h1>
+      <div class="price reveal">
+        <div class="big">630&nbsp;000&nbsp;₽</div>
+        <div class="term">2 месяца</div>
+      </div>
+      <div class="stages reveal">
+        <div class="stage-card glass"><div class="sn">Этап 01</div><div class="st">Проектирование интеграции</div></div>
+        <div class="stage-card glass"><div class="sn">Этап 02</div><div class="st">Разработка MCP-сервера и&nbsp;6&nbsp;инструментов</div></div>
+        <div class="stage-card glass"><div class="sn">Этап 03</div><div class="st">Авторизация и&nbsp;тестирование</div></div>
+        <div class="stage-card glass"><div class="sn">Этап 04</div><div class="st">Внедрение и&nbsp;инструкция по&nbsp;подключению</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. РАЗВИТИЕ -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Развитие решения</div>
+      <h1 class="reveal">Подход масштабируется на&nbsp;другие источники знаний</h1>
+      <div class="subtitle reveal" style="margin-top:30px;">Сегодня через MCP подключается Teamly. Тем&nbsp;же способом подключаются и&nbsp;другие источники знаний контура ГеоТеха. Под&nbsp;каждый источник - свой MCP, механизм интеграции один.</div>
+      <ul class="pts reveal" style="columns:2; column-gap:80px; max-width:1400px;">
+        <li>Confluence</li>
+        <li>Jira</li>
+        <li>LMS</li>
+        <li>Сетевые диски</li>
+        <li>Документы проектировщиков</li>
+      </ul>
+      <div class="note reveal">Это не&nbsp;разовая интеграция, а&nbsp;единый способ собирать знания компании в&nbsp;один корпоративный ИИ.</div>
+    </div>
+  </section>
+
+  <!-- 8. ПОЧЕМУ TEAMLY (фон) -->
+  <section class="slide">
+    <div class="content">
+      <div class="kicker reveal">Почему крупные компании выбирают Teamly</div>
+      <h1 class="reveal" style="font-size:74px;">Платформа знаний промышленного уровня</h1>
+      <div class="tasks reveal" style="grid-template-columns:repeat(3,1fr);">
+        <div class="task glass"><div class="h">База знаний и&nbsp;RAG</div><div class="d">единое хранилище с&nbsp;умным поиском по&nbsp;смыслу</div></div>
+        <div class="task glass"><div class="h">Права и&nbsp;безопасность</div><div class="d">разграничение доступа, контроль на&nbsp;уровне пространств и&nbsp;статей</div></div>
+        <div class="task glass"><div class="h">Развитие и&nbsp;поддержка</div><div class="d">гарантии по&nbsp;продукту и&nbsp;дорожная карта вендора</div></div>
+      </div>
+      <div class="note reveal">Слайд фоновый. Детальные слайды о&nbsp;продукте Teamly (награды, клиенты) добавляются из&nbsp;общего набора по&nbsp;запросу.</div>
+    </div>
+  </section>
+
+  <!-- 9. КОНТАКТЫ -->
+  <section class="slide bare">
+    <div class="wm">TEAMLY</div>
+    <div class="content" style="justify-content:center;">
+      <div class="kicker reveal">Готовы обсудить интеграцию</div>
+      <h1 class="reveal" style="font-size:104px;">Подключим знания<br>к&nbsp;вашему ИИ</h1>
+      <div class="accentbar reveal"></div>
+    </div>
+    <div class="contactsbar reveal">
+      <div class="contactgrid">
+        <div><div class="cl">Сайт</div><div class="cv">teamly.ru</div></div>
+        <div><div class="cl">Решение</div><div class="cv">Teamly через MCP для&nbsp;Open WebUI</div></div>
+        <div><div class="cl">Клиент</div><div class="cv">ГеоТех · июнь 2026</div></div>
+      </div>
+      <div class="wordmark">TEAMLY</div>
+    </div>
+  </section>
+
+</div></div>
+
+<script>
+const stage = document.getElementById('stage');
+const slides = [...document.querySelectorAll('.slide')];
+let cur = 0;
+slides.forEach((s,i)=>{
+  const prog = document.createElement('div'); prog.className='progress'; s.appendChild(prog);
+  if(s.classList.contains('bare')) return;
+  const bot = document.createElement('div'); bot.className='chrome bot';
+  bot.innerHTML = `<span class="brand">Teamly · GeoTech</span><span>${String(i+1).padStart(2,'0')} / ${String(slides.length).padStart(2,'0')}</span>`;
+  s.appendChild(bot);
+});
+function show(n){ cur=Math.max(0,Math.min(slides.length-1,n)); slides.forEach((s,i)=>{ s.classList.toggle('active',i===cur); const p=s.querySelector('.progress'); if(p) p.style.width=((cur+1)/slides.length*100)+'%'; }); }
+function next(){ show(cur+1); } function prev(){ show(cur-1); }
+document.addEventListener('keydown', e=>{
+  if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){ e.preventDefault(); next(); }
+  if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); prev(); }
+  if(e.key==='Home') show(0); if(e.key==='End') show(slides.length-1);
+});
+document.addEventListener('click', e=>{ if(e.clientX>window.innerWidth/2) next(); else prev(); });
+function scale(){ stage.style.transform=`scale(${Math.min(window.innerWidth/1920, window.innerHeight/1080)})`; }
+window.addEventListener('resize', scale); scale(); show(0);
+</script>
+</body>
+</html>
